@@ -183,12 +183,16 @@ randomness, which is I/O, which needs the `Os` (docs/19). A map could take
 a key from its creator (`Map::with_key(k)`), and `std` could give one out
 from `Os`. Until then keys from an adversary can be made to collide.
 
-## No `t test` — gap
+## No `t test` — fixed in 0.44.0
 
 The tests are a dependent program in `tests/demo` (by path: `hashmap = {
 path = "../.." }`), its output compared with `tests/expected.txt` by a
 shell script, as tcalc does. Each check is a printed line and a `//`
 comment saying what it should be, which nothing checks but the diff.
+
+Since t 0.44.0 they're `#[test]`s in `tests/lib.t`, with `assert_eq`, and
+`t test tests/lib.t` runs them; `t check --deny-warnings` replaced looking
+at what `t check` printed.
 
 ## What worked — works
 

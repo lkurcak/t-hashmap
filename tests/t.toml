@@ -1,0 +1,2 @@
+[dependencies]
+hashmap = { path = ".." }
