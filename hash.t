@@ -1,7 +1,7 @@
 //! Hashing: what a key gives a map to find its bucket by.
 
 use alloc::string::String;
-use core::num::wrapping_mul;
+use core::num::{wrap, wrapping_mul};
 
 /// A value that can be hashed: equal values must write the same bytes
 /// to a `Hasher`, or a map won't find what's in it. Nothing checks this,
@@ -57,50 +57,11 @@ impl Hasher {
     export fn finish(&self) -> u64 { self.state }
 }
 
-/// A signed integer as the 64 bits of its two's complement, which tells
-/// any two apart.
-fn bits(x: i64) -> u64 {
-    if x < 0 { -(x + 1) as u64 | 0x8000_0000_0000_0000 } else { x as u64 }
-}
-
-impl Hash for u8 {
-    fn hash(&self, h: &mut Hasher) { h.u64(*self as u64) }
-}
-
-impl Hash for u16 {
-    fn hash(&self, h: &mut Hasher) { h.u64(*self as u64) }
-}
-
-impl Hash for u32 {
-    fn hash(&self, h: &mut Hasher) { h.u64(*self as u64) }
-}
-
-impl Hash for u64 {
-    fn hash(&self, h: &mut Hasher) { h.u64(*self) }
-}
-
-impl Hash for usize {
-    fn hash(&self, h: &mut Hasher) { h.u64(*self as u64) }
-}
-
-impl Hash for i8 {
-    fn hash(&self, h: &mut Hasher) { h.u64(bits(*self as i64)) }
-}
-
-impl Hash for i16 {
-    fn hash(&self, h: &mut Hasher) { h.u64(bits(*self as i64)) }
-}
-
-impl Hash for i32 {
-    fn hash(&self, h: &mut Hasher) { h.u64(bits(*self as i64)) }
-}
-
-impl Hash for i64 {
-    fn hash(&self, h: &mut Hasher) { h.u64(bits(*self)) }
-}
-
-impl Hash for isize {
-    fn hash(&self, h: &mut Hasher) { h.u64(bits(*self as i64)) }
+/// An integer as the 64 bits of its two's complement, which tells any two
+/// of one type apart: one impl for all ten integer types, beside the
+/// others, as `Int` is sealed, so `String` is known not to be one.
+impl<T: Int> Hash for T {
+    fn hash(&self, h: &mut Hasher) { h.u64(wrap(*self)) }
 }
 
 impl Hash for bool {
