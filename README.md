@@ -43,6 +43,7 @@ Nothing in it is `unsafe`, and nothing panics: running out of memory is
 
 ## Developing
 
-`tests/run.sh` checks it as CI does: `t check` with no warnings, `t fmt
---check`, and the program in `tests/demo` (a dependent, by path) against
-`tests/expected.txt`. CI installs a pinned `t` release.
+`tests/run.sh` checks it as CI does: `t check --deny-warnings`, `t fmt
+--check`, and `t test` of `tests/lib.t`, a dependent by path whose
+`#[test]`s use the map as any dependent would. CI installs a pinned `t`
+release.

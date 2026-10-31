@@ -9,8 +9,8 @@ variables.
 
 - `lib.t` is the package's root (`Map`), `hash.t` the `hash` module
   (`Hash`, `Hasher`, `Probe`).
-- `tests/run.sh` runs what CI runs; `tests/demo` is a dependent program,
-  whose output is `tests/expected.txt` (`BLESS=1` rewrites it).
+- `tests/run.sh` runs what CI runs; `tests/lib.t` is a dependent package
+  of `#[test]`s (`t test tests/lib.t`).
 - CI pins a `t` release (`T_VERSION` + `T_SHA256` in ci.yml); bump both
   after a t-lang release, from `gh release view vX.Y.Z -R lkurcak/t-lang
   --json assets`.
