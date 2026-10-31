@@ -12,7 +12,7 @@ Positive findings, where something worked better than expected, are
 labelled **works**. The log is evidence for t-lang's plans, not a design
 for them.
 
-Written against `t` 0.40.0; updated for 0.41.0.
+Written against `t` 0.40.0; updated for 0.41.0 and 0.42.0.
 
 ## Looking up `String` keys by `&str` — unsure
 
@@ -138,7 +138,7 @@ linear keys can be built and used, but not inserted into. A linear-key
 old value back, and the caller must use it up, which the demo's `Token`s
 show.
 
-## One `Hash` impl per integer type — unsure
+## One `Hash` impl per integer type — fixed in 0.42.0
 
 `impl<T: Int> Hash for T` would overlap with `impl Hash for String` (no
 negative reasoning, so `String: Int` can't be ruled out), so it's ten
@@ -148,6 +148,17 @@ reinterpret and there's no `to_bits`:
 ```rust,ignore
 fn bits(x: i64) -> u64 {
     if x < 0 { (-(x + 1)) as u64 | 0x8000_0000_0000_0000 } else { x as u64 }
+}
+```
+
+Since 0.42.0 (t-lang step 29), `Int` is a `sealed` trait, which the
+overlap check uses: no impl of `Int` is for `String`, and none can be
+added, so the two impls don't overlap. And `core::num::wrap::<T, u64>`
+gives any integer's two's complement bits. So it's one impl:
+
+```rust,ignore
+impl<T: Int> Hash for T {
+    fn hash(&self, h: &mut Hasher) { h.u64(wrap(*self)) }
 }
 ```
 
