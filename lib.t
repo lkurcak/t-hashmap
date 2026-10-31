@@ -34,13 +34,15 @@ export struct Map<K, V> { buckets: List<List<Entry<K, V>>>, len: usize }
 
 impl<K, V> Map<K, V> {
     /// A map with no keys, which has allocated nothing.
-    export fn new() -> Map<K, V> { Map { buckets: List::new(), len: 0 } }
+    export fn new() -> { m: Map<K, V> | m.len() == 0 } { Map { buckets: List::new(), len: 0 } }
 
-    /// How many keys it has.
+    /// How many keys it has. It's a measure, so refinements can say it.
+    #[measure]
     export fn len(&self) -> usize { self.len }
 
     /// Does it have no keys?
-    export fn is_empty(&self) -> bool { self.len == 0 }
+    #[measure]
+    export fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Its keys and values, in no order that means anything.
     export fn iter(&self) -> Iter<K, V> {
@@ -116,8 +118,9 @@ impl<K: Hash + Eq, V> Map<K, V> {
         Option::None
     }
 
-    /// Puts `e` in its bucket, with no other key like it there.
-    fn put(&mut self, e: Entry<K, V>) with alloc {
+    /// Puts `e` in its bucket, with no other key like it there. It leaves
+    /// `len` to its caller.
+    fn put(&mut self, e: Entry<K, V>) with alloc ensures self.len() == old(self.len()) {
         let n = self.buckets.len();
         if n == 0 {
             let mut bucket = List::new();
@@ -161,11 +164,13 @@ impl<K: Hash + Eq + Discard, V> Map<K, V> {
         if self.len >= self.buckets.len() {
             self.grow();
         }
-        self.put(Entry { key, value });
         // A map as big as a `usize` can count can't count one more key.
+        // The check is after `grow`, which can't say it keeps `len`: its
+        // closure captures `self` (FRICTION.md); `put` says so.
         if self.len == greatest() {
             out_of_memory();
         }
+        self.put(Entry { key, value });
         self.len = self.len + 1;
         Option::None
     }
