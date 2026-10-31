@@ -97,7 +97,15 @@ self.len = self.len + 1;
 Moving the check after `put` fixes it. `put` can't change `len`, but its
 signature doesn't say so: knowing which fields a `&mut self` method writes
 would need effects on places, or `put` taking `&mut self.buckets` instead
-(which it can't, being a method). Similar in `remove_entry`: `m ==
+(which it can't, being a method).
+
+Since 0.43.0 (t-lang step 30) it can say so: `put` is `ensures self.len()
+== old(self.len())`, and `len` is a `#[measure]`, so the check can sit
+before `put`. Not before `grow`, though, which can't say the same: it
+moves the entries over with `old.free_with(|b| b.free_with(|e|
+self.put(e)))`, and a closure that captures `self` makes `*self` a value
+nothing's known of after each call, so `grow`'s body can't prove what it
+would ensure. The check sits between them. Similar in `remove_entry`: `m ==
 bucket.len()` is lost in a loop that lends `bucket`, so the loop compares
 with `bucket.len()` each time instead.
 
