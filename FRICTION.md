@@ -12,7 +12,7 @@ Positive findings, where something worked better than expected, are
 labelled **works**. The log is evidence for t-lang's plans, not a design
 for them.
 
-Written against `t` 0.40.0.
+Written against `t` 0.40.0; updated for 0.41.0.
 
 ## Looking up `String` keys by `&str` — unsure
 
@@ -42,7 +42,7 @@ checker accepts them: `str` can't be a `K`), `ages.get("ada")` and
 clearer than `Borrow` (one trait, says what it's for), but every library
 that wants this will invent its own `Probe`.
 
-## `x % n < n` isn't proved for a variable `n` — gap
+## `x % n < n` isn't proved for a variable `n` — fixed in 0.41.0
 
 The bucket of a hash is `h % n`, and indexing needs `i < n`:
 
@@ -57,6 +57,13 @@ fn slot(h: u64, n: { n: usize | n > 0 }) -> { i: usize | i < n } {
 x % n < n` for `n > 0` (unsigned) is a fact the checker could add whenever
 it sees `%`, as it does for `&`: the mask version, `& (n - 1)`, is proved,
 and that's what the map uses, with a power of two of buckets.
+
+Since 0.41.0 the checker knows what `%` by any divisor gives (t-lang step
+28), so `h % n` proves `i < n`. The map keeps the mask, now with a comment
+saying why: one `&` instead of a division, and `n` is always a power of
+two (`grow` doubles it). What's still missing is saying so: `n & (n - 1)
+== 0` isn't a fact T can state of a field, so the mask's correctness
+rests on the comment.
 
 ## The map's invariant can't be stated — gap
 
@@ -94,7 +101,7 @@ would need effects on places, or `put` taking `&mut self.buckets` instead
 bucket.len()` is lost in a loop that lends `bucket`, so the loop compares
 with `bucket.len()` each time instead.
 
-## No `if let` — gap
+## No `if let` — fixed in 0.41.0
 
 Four places want "return early if it's there":
 
@@ -106,6 +113,20 @@ match self.get_mut(&key) {
 ```
 
 (tcalc's findings noted it too.)
+
+Since 0.41.0 (t-lang step 28) they're `if let`, and the iterators'
+"next bucket or stop" is a `let .. else`:
+
+```rust,ignore
+if let Option::Some(e) = self.bucket.next() {
+    return Option::Some(e);
+}
+let Option::Some(b) = self.buckets.next() else { return Option::None };
+self.bucket = b.iter();
+```
+
+Nothing surprising in porting: the borrow of `self.bucket` in the
+`if let` ends where the arm does, as it did in the `match`.
 
 ## `insert` needs `K: Discard` — by design
 

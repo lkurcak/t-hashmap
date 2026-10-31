@@ -28,9 +28,8 @@ fn strings(out: &mut Stdout) -> Result<(), std::io::Error> {
     // A new value for a key that's there: the old one comes back.
     show(out, ages.insert(String::from("ada"), 37).as_ref())?; // 36
     out.line(&ages.len())?;                                    // 2
-    match ages.get_mut("alan") {
-        Option::Some(v) => *v = *v + 1,
-        Option::None => {},
+    if let Option::Some(v) = ages.get_mut("alan") {
+        *v = *v + 1;
     }
     show(out, ages.get("alan"))?;            // 42
     out.line(&ages.contains_key("ada"))?;    // true

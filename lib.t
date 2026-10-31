@@ -155,9 +155,8 @@ impl<K: Hash + Eq + Discard, V> Map<K, V> {
     /// if it had one. The key that was there stays, and `key` is thrown
     /// away.
     export fn insert(&mut self, key: K, value: V) -> Option<V> with alloc {
-        match self.get_mut(&key) {
-            Option::Some(v) => return Option::Some(replace(v, value)),
-            Option::None => {},
+        if let Option::Some(v) = self.get_mut(&key) {
+            return Option::Some(replace(v, value));
         }
         if self.len >= self.buckets.len() {
             self.grow();
@@ -188,7 +187,10 @@ fn hash_of<P: Probe>(p: P) -> u64 {
 }
 
 /// Which of `n` buckets a hash picks: its low bits, as `n` is a power of
-/// two.
+/// two. `h % n` would be right for any `n`, and the checker proves it less
+/// than `n` too, but it's a division where this is one `&`; the price is
+/// that `n` must be a power of two, which T can't say of it yet: `grow`
+/// keeps it one, by doubling.
 fn slot(h: u64, n: { n: usize | n > 0 }) -> { i: usize | i < n } {
     (h & 0xffff_ffff) as usize & (n - 1)
 }
@@ -206,14 +208,11 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
 
     fn next(&mut self) -> Option<&'a Entry<K, V>> {
         loop {
-            match self.bucket.next() {
-                Option::Some(e) => return Option::Some(e),
-                Option::None => {},
+            if let Option::Some(e) = self.bucket.next() {
+                return Option::Some(e);
             }
-            match self.buckets.next() {
-                Option::Some(b) => self.bucket = b.iter(),
-                Option::None => return Option::None,
-            }
+            let Option::Some(b) = self.buckets.next() else { return Option::None };
+            self.bucket = b.iter();
         }
     }
 }
@@ -231,17 +230,11 @@ impl<'a, K, V> Iterator for IterMut<'a, K, V> {
 
     fn next(&mut self) -> Option<EntryMut<'a, K, V>> {
         loop {
-            match self.bucket.next() {
-                Option::Some(e) => return Option::Some(EntryMut {
-                    key: &e.key,
-                    value: &mut e.value,
-                }),
-                Option::None => {},
+            if let Option::Some(e) = self.bucket.next() {
+                return Option::Some(EntryMut { key: &e.key, value: &mut e.value });
             }
-            match self.buckets.next() {
-                Option::Some(b) => self.bucket = b.iter_mut(),
-                Option::None => return Option::None,
-            }
+            let Option::Some(b) = self.buckets.next() else { return Option::None };
+            self.bucket = b.iter_mut();
         }
     }
 }
