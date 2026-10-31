@@ -12,7 +12,7 @@ Positive findings, where something worked better than expected, are
 labelled **works**. The log is evidence for t-lang's plans, not a design
 for them.
 
-Written against `t` 0.40.0; updated for 0.41.0 and 0.42.0.
+Written against `t` 0.40.0; updated for 0.41.0, 0.42.0 and 0.43.0.
 
 ## Looking up `String` keys by `&str` — unsure
 
