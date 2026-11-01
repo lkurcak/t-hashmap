@@ -120,6 +120,7 @@ impl<K: Hash + Eq, V> Map<K, V> {
 
     /// Puts `e` in its bucket, with no other key like it there. It leaves
     /// `len` to its caller.
+    #[blame_caller]
     fn put(&mut self, e: Entry<K, V>) with alloc ensures self.len() == old(self.len()) {
         let n = self.buckets.len();
         if n == 0 {
@@ -133,6 +134,7 @@ impl<K: Hash + Eq, V> Map<K, V> {
 
     /// Doubles the buckets, from 8 at first, and puts each key in its new
     /// one.
+    #[blame_caller]
     fn grow(&mut self) with alloc {
         let n = self.buckets.len();
         let more = if n == 0 {
@@ -157,6 +159,7 @@ impl<K: Hash + Eq + Discard, V> Map<K, V> {
     /// Gives the key `key` the value `value`, and returns the value it had,
     /// if it had one. The key that was there stays, and `key` is thrown
     /// away.
+    #[blame_caller]
     export fn insert(&mut self, key: K, value: V) -> Option<V> with alloc {
         if let Option::Some(v) = self.get_mut(&key) {
             return Option::Some(replace(v, value));
