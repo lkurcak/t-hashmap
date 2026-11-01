@@ -103,6 +103,7 @@ fn linear() {
 }
 
 /// Gives `k` a token of `n`, and returns what the token it had held.
+#[blame_caller]
 fn put(m: &mut Map<u32, Token>, k: u32, n: u32) -> u32 with alloc {
     match m.insert(k, Token { n }) {
         Option::Some(Token { n }) => n,
