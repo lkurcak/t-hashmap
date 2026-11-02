@@ -1,2 +1,4 @@
+libraries = ["alloc"]
+
 [dependencies]
 hashmap = { path = ".." }
