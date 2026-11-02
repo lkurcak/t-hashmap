@@ -18,13 +18,19 @@ export trait Hash {
 #[derive(Discard, Copy)]
 export struct Hasher { state: u64 }
 
+/// FNV-1a's offset basis: what a hasher starts from.
+const OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+
+/// FNV-1a's prime, which each byte is multiplied in by.
+const PRIME: u64 = 0x0100_0000_01b3;
+
 impl Hasher {
     /// A hasher that has been written nothing.
-    export fn new() -> Hasher { Hasher { state: 0xcbf2_9ce4_8422_2325 } }
+    export fn new() -> Hasher { Hasher { state: OFFSET } }
 
     /// Writes one byte.
     export fn byte(&mut self, b: u8) {
-        self.state = wrapping_mul(self.state ^ b as u64, 0x0100_0000_01b3);
+        self.state = wrapping_mul(self.state ^ b as u64, PRIME);
     }
 
     /// Writes `bytes`, one by one.

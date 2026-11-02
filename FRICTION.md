@@ -194,6 +194,13 @@ Since t 0.44.0 they're `#[test]`s in `tests/lib.t`, with `assert_eq`, and
 `t test tests/lib.t` runs them; `t check --deny-warnings` replaced looking
 at what `t check` printed.
 
+## Named constants — fixed in 0.50.0
+
+FNV-1a's offset basis and prime, and the first bucket count, were
+literals in the code, with comments saying what they were. Since t 0.50.0
+they're `const` items (`OFFSET`, `PRIME`, `FIRST`), worked out while
+compiling.
+
 ## What worked — works
 
 - Nested closures capturing `&mut self`, through effect-polymorphic

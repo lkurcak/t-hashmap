@@ -32,6 +32,9 @@ export struct EntryMut<'a, K, V> { export key: &'a K, export value: &'a mut V }
 #[derive(Discard where K: Discard, V: Discard)]
 export struct Map<K, V> { buckets: List<List<Entry<K, V>>>, len: usize }
 
+/// How many buckets a map has once it has any.
+const FIRST: usize = 8;
+
 impl<K, V> Map<K, V> {
     /// A map with no keys, which has allocated nothing.
     export fn new() -> { m: Map<K, V> | m.len() == 0 } { Map { buckets: List::new(), len: 0 } }
@@ -132,13 +135,13 @@ impl<K: Hash + Eq, V> Map<K, V> {
         self.buckets.index_mut(slot(hash_of(&e.key), n)).push(e);
     }
 
-    /// Doubles the buckets, from 8 at first, and puts each key in its new
-    /// one.
+    /// Doubles the buckets, from `FIRST` at first, and puts each key in its
+    /// new one.
     #[blame_caller]
     fn grow(&mut self) with alloc {
         let n = self.buckets.len();
         let more = if n == 0 {
-            8
+            FIRST
         } else if n > greatest::<usize>() / 2 {
             out_of_memory()
         } else {
