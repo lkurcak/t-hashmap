@@ -110,3 +110,16 @@ fn put(m: &mut Map<u32, Token>, k: u32, n: u32) -> u32 with alloc {
         Option::None => 0,
     }
 }
+
+fn shareable<T: Send + Sync>(_t: &T) {}
+
+/// A map, its entries and its iterators can go to another thread, or be
+/// shared by threads, when its keys and values can.
+#[test]
+fn send_and_sync() {
+    let mut m: Map<String, u8> = Map::new();
+    m.insert(String::from("ada"), 36);
+    shareable(&m);
+    shareable(&m.iter());
+    shareable(&m.iter_mut());
+}

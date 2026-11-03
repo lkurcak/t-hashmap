@@ -20,16 +20,20 @@ use core::mem::replace;
 use core::num::greatest;
 
 /// A key and its value.
-#[derive(Discard)]
+#[derive(Discard, Send, Sync)]
 export struct Entry<K, V> { export key: K, export value: V }
 
 /// A key and its value, as iterating with `iter_mut` gives them: the value
 /// can be changed, the key can't.
-#[derive(Discard)]
+#[derive(Discard, Send, Sync)]
 export struct EntryMut<'a, K, V> { export key: &'a K, export value: &'a mut V }
 
 /// Keys of type `K`, each with a value of type `V`.
-#[derive(Discard where K: Discard, V: Discard)]
+#[derive(
+    Discard where K: Discard, V: Discard,
+    Send where K: Send, V: Send,
+    Sync where K: Sync, V: Sync,
+)]
 export struct Map<K, V> { buckets: List<List<Entry<K, V>>>, len: usize }
 
 /// How many buckets a map has once it has any.
@@ -207,7 +211,7 @@ fn slot(h: u64, n: { n: usize | n > 0 }) -> { i: usize | i < n } {
 }
 
 /// A map's keys and values, as `Map::iter` gives them.
-#[derive(Discard)]
+#[derive(Discard, Send where K: Sync, V: Sync, Sync where K: Sync, V: Sync)]
 export struct Iter<'a, K, V> {
     buckets: core::slice::Iter<'a, List<Entry<K, V>>>,
     bucket: core::slice::Iter<'a, Entry<K, V>>,
@@ -229,7 +233,7 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
 }
 
 /// A map's keys and values, as `Map::iter_mut` gives them.
-#[derive(Discard)]
+#[derive(Discard, Send where K: Send, V: Send, Sync where K: Sync, V: Sync)]
 export struct IterMut<'a, K, V> {
     buckets: core::slice::IterMut<'a, List<Entry<K, V>>>,
     bucket: core::slice::IterMut<'a, Entry<K, V>>,
