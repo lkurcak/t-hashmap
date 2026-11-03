@@ -15,7 +15,7 @@ export trait Hash {
 /// FNV-1a, 64 bits: simple, quick on short keys, and the same in every
 /// build. It isn't keyed, so whoever chooses the keys can choose ones that
 /// share a bucket; a map of keys from an adversary wants a keyed hash.
-#[derive(Discard, Copy)]
+#[derive(Discard, Copy, Send, Sync)]
 export struct Hasher { state: u64 }
 
 /// FNV-1a's offset basis: what a hasher starts from.
