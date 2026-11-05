@@ -18,7 +18,7 @@ fn strings() {
     // A new value for a key that's there: the old one comes back.
     assert_eq(&ages.insert(String::from("ada"), 37).unwrap(), &36);
     assert_eq(&ages.len(), &2);
-    if let Option::Some(v) = ages.get_mut("alan") {
+    if let Some(v) = ages.get_mut("alan") {
         *v = *v + 1;
     }
     assert_eq(ages.get("alan").unwrap(), &42);
@@ -106,8 +106,8 @@ fn linear() {
 #[blame_caller]
 fn put(m: &mut Map<u32, Token>, k: u32, n: u32) -> u32 with alloc {
     match m.insert(k, Token { n }) {
-        Option::Some(Token { n }) => n,
-        Option::None => 0,
+        Some(Token { n }) => n,
+        None => 0,
     }
 }
 
