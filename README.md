@@ -17,8 +17,8 @@ use hashmap::Map;
 
 let mut ages: Map<String, u8> = Map::new();
 ages.insert(String::from("ada"), 36);   // with alloc
-ages.get("ada")                         // Option::Some(&36)
-ages.remove("ada")                      // Option::Some(36)
+ages.get("ada")                         // Some(&36)
+ages.remove("ada")                      // Some(36)
 ```
 
 ## What's in it

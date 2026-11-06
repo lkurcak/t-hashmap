@@ -74,28 +74,28 @@ impl<K: Hash + Eq, V> Map<K, V> {
     export fn get<P: Probe<Key = K>>(&self, p: P) -> Option<&V> {
         let n = self.buckets.len();
         if n == 0 {
-            return Option::None;
+            return None;
         }
         for e in self.buckets.index(slot(hash_of(p), n)).iter() {
             if p.is(&e.key) {
-                return Option::Some(&e.value);
+                return Some(&e.value);
             }
         }
-        Option::None
+        None
     }
 
     /// The value of the key `p` is, to change, if it's there.
     export fn get_mut<P: Probe<Key = K>>(&mut self, p: P) -> Option<&mut V> {
         let n = self.buckets.len();
         if n == 0 {
-            return Option::None;
+            return None;
         }
         for e in self.buckets.index_mut(slot(hash_of(p), n)).iter_mut() {
             if p.is(&e.key) {
-                return Option::Some(&mut e.value);
+                return Some(&mut e.value);
             }
         }
-        Option::None
+        None
     }
 
     /// Is the key `p` is there?
@@ -105,7 +105,7 @@ impl<K: Hash + Eq, V> Map<K, V> {
     export fn remove_entry<P: Probe<Key = K>>(&mut self, p: P) -> Option<Entry<K, V>> {
         let n = self.buckets.len();
         if n == 0 {
-            return Option::None;
+            return None;
         }
         let bucket = self.buckets.index_mut(slot(hash_of(p), n));
         let mut i: usize = 0;
@@ -122,7 +122,7 @@ impl<K: Hash + Eq, V> Map<K, V> {
             }
             i = i + 1;
         }
-        Option::None
+        None
     }
 
     /// Puts `e` in its bucket, with no other key like it there. It leaves
@@ -168,8 +168,8 @@ impl<K: Hash + Eq + Discard, V> Map<K, V> {
     /// away.
     #[blame_caller]
     export fn insert(&mut self, key: K, value: V) -> Option<V> with alloc {
-        if let Option::Some(v) = self.get_mut(&key) {
-            return Option::Some(replace(v, value));
+        if let Some(v) = self.get_mut(&key) {
+            return Some(replace(v, value));
         }
         if self.len >= self.buckets.len() {
             self.grow();
@@ -182,14 +182,14 @@ impl<K: Hash + Eq + Discard, V> Map<K, V> {
         }
         self.put(Entry { key, value });
         self.len = self.len + 1;
-        Option::None
+        None
     }
 
     /// Takes the key `p` is out, and returns its value, if it's there.
     export fn remove<P: Probe<Key = K>>(&mut self, p: P) -> Option<V> {
         match self.remove_entry(p) {
-            Option::Some(Entry { key: _, value }) => Option::Some(value),
-            Option::None => Option::None,
+            Some(Entry { key: _, value }) => Some(value),
+            None => None,
         }
     }
 }
@@ -223,10 +223,10 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
 
     fn next(&mut self) -> Option<&'a Entry<K, V>> {
         loop {
-            if let Option::Some(e) = self.bucket.next() {
-                return Option::Some(e);
+            if let Some(e) = self.bucket.next() {
+                return Some(e);
             }
-            let Option::Some(b) = self.buckets.next() else { return Option::None };
+            let Some(b) = self.buckets.next() else { return None };
             self.bucket = b.iter();
         }
     }
@@ -245,10 +245,10 @@ impl<'a, K, V> Iterator for IterMut<'a, K, V> {
 
     fn next(&mut self) -> Option<EntryMut<'a, K, V>> {
         loop {
-            if let Option::Some(e) = self.bucket.next() {
-                return Option::Some(EntryMut { key: &e.key, value: &mut e.value });
+            if let Some(e) = self.bucket.next() {
+                return Some(EntryMut { key: &e.key, value: &mut e.value });
             }
-            let Option::Some(b) = self.buckets.next() else { return Option::None };
+            let Some(b) = self.buckets.next() else { return None };
             self.bucket = b.iter_mut();
         }
     }
